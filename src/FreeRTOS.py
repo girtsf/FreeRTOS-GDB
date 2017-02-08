@@ -41,13 +41,11 @@ class Scheduler:
   def ShowTaskList(self): 
     self.PrintTableHeader()
     for i,rlist in enumerate(self._readyLists):
-      if i == 0:
-        items = rlist.GetElements( "TCB_t", 0 )
-      else: 
-        items = rlist.GetElements( "TCB_t", 1 )
+      items = rlist.GetElements( "TCB_t")
       if ( len(items) > 0 ): 
         print("Ready List {%d}: Num Tasks: %d" % (i, len(items)))
         for tcb,val in items:           
+          ## print(tcb, tcb.type.name, val, val.type.name)
           self.PrintTaskFormatted(tcb)
 
     items = self._blocked.GetElements("TCB_t")
@@ -70,6 +68,7 @@ class Scheduler:
     print("%16s %3s %4s" % ("Name", "PRI", "STCK"))
 
   def PrintTaskFormatted(self, task, itemVal = None):
+    ## print("TASK %s TCB address: 0x%x\n" % (str(task), task.address))
     topStack=task['pxTopOfStack']
     stackBase = task['pxStack']
     highWater = topStack - stackBase

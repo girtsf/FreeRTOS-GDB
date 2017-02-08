@@ -46,7 +46,7 @@ class ListInspector:
 
 
       
-  def GetElements(self, CastTypeStr = None, startElem = 1 ): 
+  def GetElements(self, CastTypeStr = None):
     """ Get the Elements of the list as an array of 
         gdb.Value type objects. 
         @param CastTypeStr string name of the type of object that 
@@ -54,11 +54,8 @@ class ListInspector:
           User can also pass a L{gdb.Type} object as the type
           If None, we will simply cast to uint32_t and print these 
           as hex values.
-        @param startElem This is a flag to indicate whether 
-           we will start getting elements starting at 0 or 1. Note
-           that this is to deal with some non-consistent behavior 
-           of some of the TCB Task lists.
     """
+    ## print("GetElements: %s" % self._list)
     if ( self._list != None ):
 
       CastType = None
@@ -76,17 +73,18 @@ class ListInspector:
       numElems = self._list['uxNumberOfItems']
       #print("List Elements: %d" % numElems)
       index = self._list['pxIndex']
-        
+      list_end = self._list['xListEnd']
+
       if ( numElems > 0  and numElems < 200 ):
 
-        if ( startElem == 0 ):
-          curr = index
-        else:
-          curr = index['pxPrevious']
+        curr = index
 
         for i in range(0, numElems):
           owner = curr['pvOwner']
-
+          ## print("i: %d curr: 0x%x owner: %s" % (i, curr, owner))
+          if curr.address == list_end.address:
+              curr = curr['pxNext']
+              ## print("skipped i: %d curr: 0x%x owner: %s" % (i, curr, owner))
 
           ownerObj = None
           if ( CastType != None ):
@@ -100,7 +98,7 @@ class ListInspector:
           itemVal = curr['xItemValue']
           resp.append( (ownerObj, itemVal.cast(StdTypes.uint32_t)) )
 
-          curr = curr['pxPrevious']
+          curr = curr['pxNext']
 
       return(resp)
       
